@@ -5,8 +5,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from torch4hep.conv_utils import get_conv_out_length
-from torch4hep.conv_utils import get_conv_padding
+from torch4hep.utils.convolution import get_conv_out_length
+from torch4hep.utils.convolution import get_conv_padding
 
 import torch
 from torch.nn.parameter import Parameter
