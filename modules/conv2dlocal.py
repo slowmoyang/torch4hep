@@ -5,8 +5,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import math
+
 from torch4hep.utils.convolution import get_conv_out_length
-from torch4hep.utils.convolution import get_conv_padding
 
 import torch
 from torch.nn.parameter import Parameter
@@ -15,8 +16,6 @@ from torch.nn.modules.module import Module
 from torch.nn.modules.utils import _pair
 
 import numpy as np
-import math
-import warnings
 
 
 
@@ -34,20 +33,11 @@ class Conv2dLocal(Module):
         """
         super(Conv2dLocal, self).__init__()
 
-        try:
-            from torch.nn.modules.conv import Conv2dLocal
-        except ImportError:
-            pass
-        else:
-            print(torch.__version__)
-            warnings.warn("Conv2dLocal is already impledmented by PyTorch.", DeprecationWarning) 
-
-
-        in_rank = len(in_size) 
+        in_rank = len(in_size)
         if in_rank == 3:
-            stard_idx = 0 
+            start_index = 0
         elif in_rank == 4:
-            stard_idx = 1 
+            start_index = 1
         else:
             raise ValueError()
 
@@ -110,15 +100,15 @@ class Conv2dLocal(Module):
 
 def conv2d_local(input,
                  weight,
-                 bias=None, 
-                 padding=0, 
+                 bias=None,
+                 padding=0,
                  stride=1,
                  dilation=1):
-                     
+
     if input.dim() != 4:
         raise NotImplementedError(
             "Input Error: Only 4D input Tensors supported (got {}D)".format(input.dim()))
-                     
+
     if weight.dim() != 6:
         # out_height x out_width x out_channels x in_channels x kernel_height x kernel_width
         raise NotImplementedError(
@@ -126,18 +116,16 @@ def conv2d_local(input,
 
     batch_size = input.size()[0]
 
-
-             
     weight_size = weight.size()
 
-    out_height = weight_size[0] 
+    out_height = weight_size[0]
     out_width = weight_size[1]
     out_channels = weight_size[2]
     in_channels = weight_size[3]
     kernel_height = weight_size[4]
     kernel_width = weight_size[5]
-                     
-    kernel_size = (kernel_height, kernel_width) 
+
+    kernel_size = (kernel_height, kernel_width)
 
     print("\nInput: {}".format(input.size()))
 
@@ -166,9 +154,9 @@ def conv2d_local(input,
     print("cols.unsqueeze(-1): {}".format(cols.size()))
 
     # [N, L, 1, Pi(k)]
-    cols = cols.permute(0, 2, 3, 1) 
+    cols = cols.permute(0, 2, 3, 1)
     print("cols.permute(0, 2, 3, 1): {}".format(cols.size()))
-                     
+
     # (H_out * H_out,
     #  C_out,        
     #  C_in * H_kernel * W_kernel)
@@ -179,42 +167,20 @@ def conv2d_local(input,
     print("weight.view: {}".format(weight.size()))
     # (H_out * W_out,
     #  C_in * H_kernel * W_kernel,
-    #  C_out)        
+    #  C_out)
     weight = weight.permute(0, 2, 1)
     print("weight.permute: {}".format(weight.size()))
-                     
+
     # cols: [N, L, 1, Pi(k)]
     # weight: [H_out * W_out, C_in * H_kernel * W_kernel, C_out]
     print("\nFor matmul")
     print("cols: {}".format(cols.shape))
     print("weight: {}".format(weight.shape))
-    out = torch.matmul(cols, weight)
+    out = torch.mm(cols, weight)
 
     out = out.view(batch_size, out_height, out_width, out_channels)
     out = out.permute(0, 3, 1, 2)
 
     if bias is not None:
-        out = out + bias.expand_as(out) 
-                     
-    return out       
-                     
-
-
-if __name__ == "__main__": 
-    H_in = 16
-    W_in = 16
-    C_in = 64
-
-    C_out = 12
-
-    x = torch.rand(torch.Size([512, C_in, H_in, W_in]))
-
-    c2l = Conv2dLocal(in_height=H_in,
-                      in_width=W_in,
-                      in_channels=C_in,
-                      out_channels=C_out,
-                      kernel_size=(2, 2))
-
-    z = c2l(x)
-
-    print(z.shape)
+        out = out + bias.expand_as(out)
+    return out

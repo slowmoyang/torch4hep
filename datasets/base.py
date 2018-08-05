@@ -3,7 +3,6 @@ from __future__ import print_function
 from __future__ import division
 
 from torch.utils.data import Dataset
-from torchvision import transforms
 
 import ROOT
 

@@ -22,8 +22,7 @@ def get_conv_transpose_out_length(in_length,
                               kernel_size,
                               stride=1,
                               padding=0,
-                              out_padding=0,
-                              dilation=1):
+                              out_padding=0):
     out_length = (in_length - 1) * stride - 2 * padding + kernel_size + out_padding
     return out_length
 

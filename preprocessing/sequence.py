@@ -4,51 +4,6 @@ from __future__ import print_function
 
 import numpy as np
 
-# check cProfile
-def adjust_sequence_length(sequence,
-                           max_len,
-                           padding="pre",
-                           truncating="pre"):
-    """
-    I referred tf.keras.preprocessing.sequence.pad_sequences
-
-    sequence: ndarray (seq_len, input_size)
-    """
-    if len(sequence.shape) != 2:
-        raise ValueError("It support only rank of 2 tensor")
-
-    padding = padding.lower()
-    truncating = truncating.lower()
-
-    if not padding in {"pre", "post"}:
-        raise ValueError
-
-    if not truncating in {"pre", "post"}:
-        raise ValueError
-
-    seq_len = sequence.shape[0]
-
-    if seq_len == max_len:
-        pass
-    # Pad sequence
-    elif seq_len < max_len:
-        diff = abs(max_len - seq_len)
-        if padding == "pre":
-            pad_width = ((diff, 0), (0, 0))
-        else:
-            pad_width = ((0, diff), (0, 0))
-        sequence = np.pad(sequence, pad_width, mode="constant", constant_values=0.0)
-    # Truncate
-    else:
-        if truncating == "pre":
-            slicing = slice(0, max_len)
-        else:
-            slicing = slice(seq_len - max_len, seq_len)
-        sequence = sequence[slicing]
-        
-    return sequence
-
-
 # TODO axis of seq_len
 class SeqLenAdjuster(object):
     def __init__(self,
