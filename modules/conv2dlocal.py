@@ -137,6 +137,7 @@ def conv2d_local(input,
                     dilation=dilation,
                     padding=padding,
                     stride=stride)
+
     print("cols = F.unflod(input): {}".format(cols.size()))
     print("C_in * H_k * W_k = {} * {} * {} = {}".format(
         in_channels,
@@ -176,7 +177,7 @@ def conv2d_local(input,
     print("\nFor matmul")
     print("cols: {}".format(cols.shape))
     print("weight: {}".format(weight.shape))
-    out = torch.mm(cols, weight)
+    out = torch.matmul(cols, weight)
 
     out = out.view(batch_size, out_height, out_width, out_channels)
     out = out.permute(0, 3, 1, 2)
