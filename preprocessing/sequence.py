@@ -47,10 +47,10 @@ class SeqLenAdjuster(object):
         return np.pad(sequence, pad_width, mode="constant", constant_values=self.value)
 
     def truncate_pre(self, sequence):
-        return sequence[: self.max_len]
+        return sequence[-self.max_len: ]
 
     def truncate_post(self, sequence):
-        return sequence[-self.max_len: ]
+        return sequence[: self.max_len]
 
     def transform(self, sequence):
         seq_len = sequence.shape[0]
