@@ -6,3 +6,4 @@ from . import datasets
 from . import modules
 from . import preprocessing
 from . import utils
+from . import projects
