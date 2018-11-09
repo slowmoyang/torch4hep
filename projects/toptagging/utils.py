@@ -10,10 +10,10 @@ import pandas as pd
 from torch4hep.utils.misc import convert_str_to_number
 
 
-def find_good_models(directory,
-                     which={"max": ["auc"], "min": ["loss"]},
-                     verbose=True,
-                     extension=".pth.tar"):
+def find_good_state(directory,
+                    which={"max": ["auc"], "min": ["loss"]},
+                    verbose=True,
+                    extension=".pth.tar"):
     """
     path: '/path/to/directory/<MODEL NAME>_loss-0.2345_<KEY>-<VALUE>.pth.tar'
     """

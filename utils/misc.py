@@ -5,24 +5,42 @@ from __future__ import print_function
 import os
 import re
 import warnings
+from datetime import datetime
+import logging
+import copy
+
+
 
 
 class Directory(object):
-    def __init__(self, path, creation=True):
-        self.path = path
-        self._creation = creation
-        if self._creation:
+    def __init__(self, path, create=True):
+        self._path = path
+        self._create = create
+        if self._create:
             os.makedirs(self.path)
 
-    def make_subdir(self, name):
-        path = os.path.join(self.path, name)
-        setattr(self, name, Directory(path, creation=self._creation))
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, path_):
+        if not isinstance(path_, str):
+            raise TypeError
+        self._path = path_
+
+    def mkdir(self, name):
+        path = os.path.join(self._path, name)
+        setattr(self, name, Directory(path, create=self._create))
 
     def get_entries(self, full_path=True):
         entries = os.listdir(self.path)
         if full_path:
-            entries = [os.path.join(self.path, each) for each in entries]
+            entries = [os.path.join(self._path, each) for each in entries]
         return entries
+
+    def concat(self, name):
+        return os.path.join(self._path, name)
 
 
 def is_float(string):
