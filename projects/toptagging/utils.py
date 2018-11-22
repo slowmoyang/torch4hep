@@ -10,6 +10,12 @@ import pandas as pd
 from torch4hep.utils.misc import convert_str_to_number
 
 
+def parse_stringized_data(data):
+    data = [each.split("-") for each in data]
+    data = {key: convert_str_to_number(value, warning=False) for (key, value) in data}
+    return data
+
+
 def find_good_state(directory,
                     which={"max": ["auc"], "min": ["loss"]},
                     verbose=True,
