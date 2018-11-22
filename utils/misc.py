@@ -41,12 +41,6 @@ class Directory(object):
     def concat(self, name):
         return os.path.join(self._path, name)
 
-    def startswith(self):
-        return self._path.startswith()
-
-    def endswith(self):
-        return self._path.endswith()
-
 
 def is_float(string):
     if not isinstance(string, str):
