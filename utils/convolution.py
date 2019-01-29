@@ -1,84 +1,81 @@
+'''arXiv:1603.07285
+
+https://github.com/vdumoulin/conv_arithmetic
+
+https://tensorflow.blog/a-guide-to-convolution-arithmetic-for-deep-learning/ (Korean)
+https://www.tensorflow.org/api_guides/python/nn#Notes_on_SAME_Convolution_Padding
+'''
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
-from torch.nn.modules.utils import _pair
 
 import sympy
 import math
 from collections import Iterable
 
+from torch.nn.modules.utils import _pair
 
+
+def allowing_pair_args(function):
+    def wrapped_function(**kwargs):
+        iterable_exists = any(isinstance(each, Iterable) for each in kwargs.values())
+        if iterable_exists:
+            kwargs = {key: _pair(value) for key, value in kwargs.iteritems()}
+            zipped_kwargs = [{key: value[i] for key, value in kwargs.iteritems()} for i in range(2)]
+            output = tuple(function(**each) for each in zipped_kwargs)
+        else:
+            output = function(**kwargs)
+        return output
+    return wrapped_function
+
+
+@allowing_pair_args
 def get_conv_out_length(in_length,
                         kernel_size,
                         stride=1,
                         padding=0, 
                         dilation=1):
-    out_length = ((in_length + 2 * padding - dilation * (kernel_size - 1) - 1) / stride) + 1 
+    out_length = ((in_length + 2*padding - dilation*(kernel_size - 1) - 1) / stride) + 1 
     out_length = math.floor(out_length)
     return int(out_length)
 
+
+@allowing_pair_args
 def get_conv_transpose_out_length(in_length,
-                              kernel_size,
-                              stride=1,
-                              padding=0,
-                              out_padding=0):
-    out_length = (in_length - 1) * stride - 2 * padding + kernel_size + out_padding
-    return out_length
+                                  kernel_size,
+                                  stride=1,
+                                  padding=0,
+                                  out_padding=0):
+    return (in_length - 1)*stride - 2*padding + kernel_size + out_padding
 
 
-def _get_conv_padding(in_length,
+@allowing_pair_args
+def get_conv_padding(in_length,
                      out_length,
                      kernel_size=1,
                      stride=1,
                      dilation=1):
-    i = in_length
-    o = out_length
-    k = kernel_size
-    s = stride
-    d = dilation
+    padding = sympy.symbols("p")
 
-    # padding
-    p = sympy.symbols("p")
+    # TODO write the link to equation
+    numerator = in_length + 2*padding - dilation*(kernel_size-1) - 1
+    right_side= (numerator / stride) + 1
+    equation = out_length - right_side
 
-    eq_low = o - ((i + 2*p - d*(k-1) -1) / s + 1)
-    eq_high = o + 1 - ((i + 2*p - d*(k-1) -1) / s + 1)
-
-    p_low = sympy.solve(eq_low)[0]
-    p_low = sympy.ceiling(p_low)
-    p_low = int(p_low)
-
-    # TODO if which == "lowest"
-
-    return p_low
-
-
-def get_conv_padding(in_spatial_size,
-                      out_spatial_size,
-                      kernel_size=1,
-                      stride=1,
-                      dilation=1):
-    
-    arguments = [in_spatial_size, out_spatial_size, kernel_size, stride, dilation]
-    iterable_exists = any(isinstance(each, Iterable) for each in arguments)
-    if iterable_exists:
-        kernel_size = _pair(kernel_size)
-        stride = _pair(stride)
-        dilation = _pair(dilation)
-        zipped_args = zip(in_spatial_size, out_spatial_size, kernel_size, stride, dilation)
-        padding = tuple(_get_conv_padding(*args) for args in zipped_args)
-    else:
-        padding = _get_conv_padding(in_spatial_size, out_spatial_size, kernel_size, dilation)
+    # choose the smallest solution
+    padding = sympy.solve(equation)[0]
+    padding = sympy.ceiling(padding)
+    padding = int(padding)
     return padding
 
 
-def get_conv_same_padding(in_spatial_size,
+def get_conv_same_padding(in_length,
                           kernel_size=1,
                           stride=1,
                           dilation=1):
-    padding = get_conv_padding(in_spatial_size,
-                               in_spatial_size,
-                               kernel_size,
-                               stride,
-                               dilation)
+    padding = get_conv_padding(in_length=in_length,
+                               out_length=in_length,
+                               kernel_size=kernel_size,
+                               stride=stride,
+                               dilation=dilation)
     return padding
