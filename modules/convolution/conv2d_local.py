@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import math
 
-from torch4hep.utils.convolution import get_conv_out_length
+import numpy as np
 
 import torch
 from torch.nn.parameter import Parameter
@@ -15,8 +15,8 @@ import torch.nn.functional as F
 from torch.nn.modules.module import Module
 from torch.nn.modules.utils import _pair
 
-import numpy as np
 
+from torch4hep.utils.convolution import get_conv_out_length
 
 
 class Conv2dLocal(Module):
